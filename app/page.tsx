@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="p-8">
@@ -7,40 +9,76 @@ export default function Home() {
         </h1>
 
         <p className="mt-2 text-slate-600">
-          Seleccione un tipo de acta desde el menú lateral.
+          Seleccione el tipo de acta que desea generar.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-xl bg-white p-6 shadow-sm">
+        <Link
+          href="/actas/proyecto-grado"
+          className="rounded-xl bg-white p-6 shadow-sm transition hover:shadow-md"
+        >
           <h2 className="text-lg font-semibold text-slate-800">
             Proyecto de Grado
           </h2>
 
           <p className="mt-2 text-sm text-slate-500">
-            Generación de actas de defensa pública de Proyecto de Grado.
+            Generar actas de defensa pública de Proyecto de Grado.
+          </p>
+        </Link>
+
+        <div className="rounded-xl bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-800">
+            Acta 2
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-500">
+            Próximamente.
           </p>
         </div>
 
         <div className="rounded-xl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-800">
-            Docentes
+            Acta 3
           </h2>
 
           <p className="mt-2 text-sm text-slate-500">
-            Los docentes serán administrados desde el panel de administración.
+            Próximamente.
           </p>
         </div>
 
         <div className="rounded-xl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-slate-800">
-            Documentos
+            Acta 4
           </h2>
 
           <p className="mt-2 text-sm text-slate-500">
-            Los documentos se generarán únicamente cuando sean requeridos.
+            Próximamente.
           </p>
         </div>
+
+        <div className="rounded-xl bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-800">
+            Acta 5
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-500">
+            Próximamente.
+          </p>
+        </div>
+
+        <Link
+          href="/admin"
+          className="rounded-xl bg-slate-900 p-6 text-white shadow-sm transition hover:bg-slate-800"
+        >
+          <h2 className="text-lg font-semibold">
+            Administración
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-300">
+            Gestionar docentes y configuración.
+          </p>
+        </Link>
       </div>
     </div>
   );
