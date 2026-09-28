@@ -1,6 +1,8 @@
 import { supabase } from "@/lib/supabase";
 import FormularioProyectoGrado from "./FormularioProyectoGrado";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProyectoGradoPage() {
   const { data: docentes, error } = await supabase
     .from("docentes")

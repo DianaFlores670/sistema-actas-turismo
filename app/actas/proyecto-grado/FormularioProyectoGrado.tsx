@@ -38,6 +38,10 @@ export default function FormularioProyectoGrado({
 const [generandoPdf, setGenerandoPdf] =
   useState(false);
 
+  const [errores, setErrores] = useState<
+  Record<string, string>
+>({});
+
 const iframeRef =
   useRef<HTMLIFrameElement>(null);
 
@@ -131,18 +135,79 @@ useEffect(() => {
   };
 }, [pdfUrl]);
 
-function descargarPdf() {
-  if (!pdfUrl) return;
+async function descargarPdf() {
+  if (!validarFormulario()) {
+    return;
+  }
 
-  const enlace =
-    document.createElement("a");
+  try {
+    const respuesta = await fetch(
+      "/api/actas/proyecto-grado/pdf",
+      {
+        method: "POST",
 
-  enlace.href = pdfUrl;
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-  enlace.download =
-    "acta-proyecto-grado.pdf";
+        body: JSON.stringify({
+          ...formulario,
+          presidente,
+          fechaTexto: formatearFecha(formulario.fecha),
+        }),
+      }
+    );
 
-  enlace.click();
+    if (!respuesta.ok) {
+      const tipoContenido =
+        respuesta.headers.get("content-type") || "";
+
+      let mensaje = "No se pudo generar el PDF";
+
+      if (tipoContenido.includes("application/json")) {
+        const error = await respuesta.json();
+
+        mensaje =
+          error.error || mensaje;
+      } else {
+        mensaje =
+          `Error del servidor (${respuesta.status})`;
+      }
+
+      throw new Error(mensaje);
+    }
+
+    const archivo = await respuesta.blob();
+
+    const url =
+      URL.createObjectURL(archivo);
+
+    const enlace =
+      document.createElement("a");
+
+    enlace.href = url;
+
+    enlace.download =
+      "acta-proyecto-grado.pdf";
+
+    document.body.appendChild(enlace);
+
+    enlace.click();
+
+    enlace.remove();
+
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof Error) {
+      alert(error.message);
+    } else {
+      alert(
+        "Ocurrió un error al descargar el PDF."
+      );
+    }
+  }
 }
 
 function imprimirPdf() {
@@ -151,8 +216,91 @@ function imprimirPdf() {
   iframeRef.current?.contentWindow?.print();
 }
 
+function validarFormulario() {
+  const nuevosErrores: Record<string, string> = {};
+
+  if (!formulario.postulante.trim()) {
+    nuevosErrores.postulante =
+      "El nombre del postulante es obligatorio.";
+  }
+
+  if (!formulario.tribunal1) {
+    nuevosErrores.tribunal1 =
+      "Seleccione el primer miembro del tribunal.";
+  }
+
+  if (!formulario.tribunal2) {
+    nuevosErrores.tribunal2 =
+      "Seleccione el segundo miembro del tribunal.";
+  }
+
+  if (!formulario.tutor) {
+    nuevosErrores.tutor =
+      "Seleccione el docente tutor.";
+  }
+
+  if (
+    formulario.tribunal1 &&
+    formulario.tribunal1 === formulario.tribunal2
+  ) {
+    nuevosErrores.tribunal2 =
+      "Los dos miembros del tribunal deben ser diferentes.";
+  }
+
+  if (
+    formulario.tutor &&
+    (
+      formulario.tutor === formulario.tribunal1 ||
+      formulario.tutor === formulario.tribunal2
+    )
+  ) {
+    nuevosErrores.tutor =
+      "El docente tutor no puede ser también miembro del tribunal.";
+  }
+
+  if (!formulario.fecha) {
+    nuevosErrores.fecha =
+      "Seleccione la fecha de la defensa.";
+  }
+
+  if (!formulario.hora) {
+    nuevosErrores.hora =
+      "Seleccione la hora.";
+  }
+
+  if (!formulario.tema.trim()) {
+    nuevosErrores.tema =
+      "El nombre del proyecto es obligatorio.";
+  }
+
+  if (formulario.nota === "") {
+    nuevosErrores.nota =
+      "Ingrese la nota.";
+  } else {
+    const nota = Number(formulario.nota);
+
+    if (
+      Number.isNaN(nota) ||
+      nota < 0 ||
+      nota > 100
+    ) {
+      nuevosErrores.nota =
+        "La nota debe estar entre 0 y 100.";
+    }
+  }
+
+  setErrores(nuevosErrores);
+
+  return Object.keys(nuevosErrores).length === 0;
+}
+
 async function generarActa() {
+  if (!validarFormulario()) {
+    return;
+  }
+
   try {
+    // aquí continúa tu código actual
     const respuesta = await fetch(
       "/api/actas/proyecto-grado/docx",
       {
